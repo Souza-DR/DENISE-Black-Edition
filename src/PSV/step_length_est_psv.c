@@ -11,7 +11,7 @@
 float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
          double * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
-         float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec){
+         float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec, float f_ref){
 
         /* global variables */
 	extern int MYID,MIN_ITER,TIME_FILT,STEPMAX, GRAVITY, IDX, IDY, NX, NY, NXG, NYG, POS[3], MYID;
@@ -115,8 +115,13 @@ float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_P
 	     
 	} /* end of L2 test */
 
+	/* baseline for acceptance: monotone uses L2t[1]; SPG can provide f_ref (max of last m) */
+	extern int GRAD_METHOD;
+	float fbase = L2t[1];
+	if ((GRAD_METHOD==3) && (f_ref>0.0f)) { fbase = f_ref; }
+
 	/* Did not found a step size which reduces the misfit function */
-	if((*step1==0)&&(L2t[1]<=L2t[2])){
+	if((*step1==0)&&(fbase<=L2t[2])){
 	 eps_scale = eps_scale/scalefac; 
 	 countstep++;
 	}
@@ -136,7 +141,7 @@ float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_P
 	}         
 
 	/* found a step size which reduces the misfit function */
-	if((*step1==0)&&(L2t[1]>L2t[2])){
+	if((*step1==0)&&(fbase>L2t[2])){
 	 epst1[2]=eps_scale; 
 	 *step1=1;
 	 iteste=3;
@@ -182,4 +187,3 @@ float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_P
 
 return eps_scale;
 }
-

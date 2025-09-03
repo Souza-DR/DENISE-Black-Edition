@@ -28,6 +28,7 @@ extern char JACOBIAN[STRING_SIZE],DATA_DIR[STRING_SIZE];
 extern int  NPROC, NPROCX, NPROCY, MYID, IDX, IDY; 
 extern int GRADT1, GRADT2, GRADT3, GRADT4, ITERMAX, INVMAT1, GRAD_FORM, QUELLTYPB;
 extern int HESSIAN, GRAD_METHOD, NFREQ, PCG_BETA, RTM_SHOT;
+extern int MEMORY;
 extern float FC_HESS_START, FC_HESS_INC;
 extern int FILT_SIZE, MODEL_FILTER;
 extern int FILT_SIZE_GRAD, GRAD_FILTER;
@@ -439,9 +440,12 @@ int  c=0, lineno=0, l;
 	 case 114 :
 	   fscanf(fp_in,"%s =%s",s,DFILE);
 	    break;
-	 case 115 :
-	   fscanf(fp_in,"%s =%i",s,&RTM_SHOT);
-	    break;   
+         case 115 :
+           fscanf(fp_in,"%s =%i",s,&RTM_SHOT);
+            break;   
+         case 116 :
+           fscanf(fp_in,"%s =%i",s,&MEMORY);
+           break;
 	 default:
 	    break;
 	 }

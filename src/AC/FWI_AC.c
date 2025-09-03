@@ -6,6 +6,7 @@
  */
 
 #include "fd.h"
+#include "spg.h"
 
 void FWI_AC(){
 
@@ -719,6 +720,18 @@ if(GRAD_METHOD==2){
 
 }
 
+/* Use SPG (Spectral Projected Gradient) */
+if(GRAD_METHOD==3){
+    extern float EPS_SCALE;
+    /* Set search directions to negative (preconditioned) gradients */
+    descent(fwiPSV.waveconv,     fwiPSV.waveconv);
+    descent(fwiPSV.waveconv_rho, fwiPSV.waveconv_rho);
+    /* Try BB spectral step as initial guess for EPS_SCALE */
+    float eps_bb = spg_bb_eps_ac(matAC.ppi, matAC.prho,
+                                 fwiPSV.waveconv, fwiPSV.waveconv_rho);
+    if (eps_bb > 0.0f) EPS_SCALE = eps_bb;
+}
+
 opteps_vp=0.0;
 opteps_rho=0.0;
 
@@ -732,8 +745,20 @@ if(iter==1){min_iter_help=MIN_ITER;}
 /* Estimate optimum step length ... */
 
 /* ... by line search (parabolic fitting) */
-eps_scale = step_length_est_ac(&waveAC,&waveAC_PML,&matAC,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,iter,nsrc,ns,ntr,ntr_glob,epst1,L2t,nsrc_glob,nsrc_loc,&step1,&step3,nxgrav,nygrav,ngrav,gravpos,gz_mod,NZGRAV,
-                                ntr_loc,Ws,Wr,hin,DTINV_help,req_send,req_rec);
+/* Non-monotone SPG: baseline is max L2 over last m iterations (reuse NLBFGS as memory) */
+{
+  float f_ref = 0.0f;
+  if (GRAD_METHOD==3 && iter>1){
+    extern int MEMORY;
+    int m = (MEMORY>0)?MEMORY:5;
+    int j0 = (iter-1)-m+1; if (j0<1) j0 = 1;
+    double fmax = L2_hist[j0];
+    for (j=j0+1; j<=iter-1; j++) if (L2_hist[j]>fmax) fmax=L2_hist[j];
+    f_ref = (float)fmax;
+  }
+  eps_scale = step_length_est_ac(&waveAC,&waveAC_PML,&matAC,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,iter,nsrc,ns,ntr,ntr_glob,epst1,L2t,nsrc_glob,nsrc_loc,&step1,&step3,nxgrav,nygrav,ngrav,gravpos,gz_mod,NZGRAV,
+                                ntr_loc,Ws,Wr,hin,DTINV_help,req_send,req_rec, f_ref);
+}
 
 /* no model update due to steplength estimation failed or update with the smallest steplength if the number of iteration is smaller than the minimum number of iteration per
 frequency MIN_ITER */
@@ -804,6 +829,12 @@ if(MYID==0){
 
 if(MYID==0){
   fclose(FPL2);
+}
+
+/* Persist SPG previous model/gradient snapshots for next iteration */
+if (GRAD_METHOD==3){
+  spg_store_prev_ac(matAC.ppi, matAC.prho,
+                    fwiPSV.waveconv, fwiPSV.waveconv_rho);
 }
 
 if (iter>min_iter_help){

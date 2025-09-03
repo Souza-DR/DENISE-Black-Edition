@@ -6,6 +6,7 @@
  */
 
 #include "fd.h"
+#include "spg.h"
 
 void FWI_PSV()
 {
@@ -675,6 +676,22 @@ void FWI_PSV()
         extract_LBFGS_PSV(iter, fwiPSV.waveconv, fwiPSV.gradp, fwiPSV.waveconv_u, fwiPSV.gradp_u, fwiPSV.waveconv_rho, fwiPSV.gradp_rho, matPSV.ppi, matPSV.pu, matPSV.prho, r_LBFGS);
       }
 
+      /* Use SPG (Spectral Projected Gradient): direction = -g, BB step as initial EPS_SCALE */
+      if (GRAD_METHOD == 3)
+      {
+        extern float EPS_SCALE; /* initial step guess for parabolic search */
+        /* Set search directions to negative (preconditioned) gradients */
+        descent(fwiPSV.waveconv,     fwiPSV.waveconv);
+        descent(fwiPSV.waveconv_u,   fwiPSV.waveconv_u);
+        descent(fwiPSV.waveconv_rho, fwiPSV.waveconv_rho);
+
+        /* Try BB spectral step as initial EPS_SCALE; fallback to current if unavailable */
+        float eps_bb = spg_bb_eps_psv(matPSV.ppi, matPSV.pu, matPSV.prho,
+                                      fwiPSV.waveconv, fwiPSV.waveconv_u, fwiPSV.waveconv_rho);
+        if (eps_bb > 0.0f)
+          EPS_SCALE = eps_bb;
+      }
+
       opteps_vp = 0.0;
       opteps_vs = 0.0;
       opteps_rho = 0.0;
@@ -692,8 +709,19 @@ void FWI_PSV()
       /* Estimate optimum step length ... */
 
       /* ... by line search (parabolic fitting) */
+      /* Non-monotone SPG: baseline is max L2 over last m iterations (reuse NLBFGS as memory) */
+      float f_ref = 0.0f;
+      if (GRAD_METHOD == 3 && iter > 1)
+      {
+        extern int MEMORY;
+        int m = (MEMORY > 0) ? MEMORY : 5;
+        int j0 = (iter - 1) - m + 1; if (j0 < 1) j0 = 1;
+        double fmax = L2_hist[j0];
+        for (j = j0 + 1; j <= iter - 1; j++) if (L2_hist[j] > fmax) fmax = L2_hist[j];
+        f_ref = (float)fmax;
+      }
       eps_scale = step_length_est_psv(&wavePSV, &wavePSV_PML, &matPSV, &fwiPSV, &mpiPSV, &seisPSV, &seisPSVfwi, &acq, hc, iter, nsrc, ns, ntr, ntr_glob, epst1, L2t, nsrc_glob, nsrc_loc, &step1, &step3, nxgrav, nygrav, ngrav, gravpos, gz_mod, NZGRAV,
-                                      ntr_loc, Ws, Wr, hin, DTINV_help, req_send, req_rec);
+                                      ntr_loc, Ws, Wr, hin, DTINV_help, req_send, req_rec, f_ref);
 
       /* no model update due to steplength estimation failed or update with the smallest steplength if the number of iteration is smaller than the minimum number of iteration per
 frequency MIN_ITER */
@@ -728,6 +756,15 @@ frequency MIN_ITER */
           fprintf(LAMBDA, "%d \t %d \t %e \t %e \t %e \t %e \t %e \t %e \t %e \n", nstage, iter, LAM_GRAV, L2sum, L2_grav, L2t[4], LAM_GRAV_GRAD, FWImax_all, GRAVmax_all);
           fclose(LAMBDA);
 	}
+      }
+
+      /* Persist SPG previous model/gradient snapshots for next iteration */
+      if (GRAD_METHOD == 3)
+      {
+        #include "spg.h"
+        /* Save current models and (preconditioned) gradients used to form directions */
+        spg_store_prev_psv(matPSV.ppi, matPSV.pu, matPSV.prho,
+                           fwiPSV.waveconv, fwiPSV.waveconv_u, fwiPSV.waveconv_rho);
       }
 
       if (MYID == 0)

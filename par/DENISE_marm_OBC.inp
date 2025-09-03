@@ -12,8 +12,8 @@
 (2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 5
-number_of_processors_in_y-direction_(NPROCY) = 3
+number_of_processors_in_x-direction_(NPROCX) = 10
+number_of_processors_in_y-direction_(NPROCY) = 1
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
