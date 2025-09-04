@@ -43,7 +43,7 @@ void write_par(FILE *fp){
 	extern float EPS_SCALE, SCALEFAC;
 	extern char  TRKILL_FILE[STRING_SIZE];
 
-	extern int NORMALIZE, NLBFGS, N_STREAMER;
+	extern int NORMALIZE, NLBFGS, MEMORY, N_STREAMER;
         extern float REC_INCR_X, REC_INCR_Y;
 	
 	extern char MISFIT_LOG_FILE[STRING_SIZE];
