@@ -6,14 +6,14 @@
 #
 # ------------------ DENISE Mode ---------------------------------
 # Operation mode:
-(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 0 
+(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 1
 #
 # ---------------- DENISE Physics -----------------------------
 (2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 10
-number_of_processors_in_y-direction_(NPROCY) = 1
+number_of_processors_in_x-direction_(NPROCX) = 4
+number_of_processors_in_y-direction_(NPROCY) = 3
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
@@ -175,9 +175,10 @@ lower_limit_for_qs_(QSLOWERLIM) = 10.0
 #
 #
 # ----- Optimization-Method ------ #
-gradient_method_(PCG=1/LBFGS=2)_(GRAD_METHOD) = 2
+gradient_method_(PCG=1/LBFGS=2/SPG=3)_(GRAD_METHOD) = 3
 PCG_BETA_(Fletcher_Reeves=1/Polak_Ribiere=2/Hestenes_Stiefel=3/Dai_Yuan=4) = 2
 save_(NLBFGS)_updates_during_LBFGS_optimization = 20
+SPG_memory_(size_of_nonmonotone_window)_(MEMORY) = 10
 #
 #
 #----- Definition of smoothing the models vp and vs ----- #

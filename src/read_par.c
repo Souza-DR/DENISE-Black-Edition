@@ -440,12 +440,12 @@ int  c=0, lineno=0, l;
 	 case 114 :
 	   fscanf(fp_in,"%s =%s",s,DFILE);
 	    break;
-         case 115 :
-           fscanf(fp_in,"%s =%i",s,&RTM_SHOT);
-            break;   
-         case 116 :
-           fscanf(fp_in,"%s =%i",s,&MEMORY);
-           break;
+	case 115 :
+		fscanf(fp_in,"%s =%i",s,&RTM_SHOT);
+		break;   
+	case 116 :
+		fscanf(fp_in,"%s =%i",s,&MEMORY);
+		break;
 	 default:
 	    break;
 	 }

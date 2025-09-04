@@ -392,7 +392,8 @@ void write_par(FILE *fp){
                         fprintf(fp," NLBFGS=%d \n",NLBFGS);
 			break;
 		case 3:
-			fprintf(fp," GRAD_METHOD=%d: \n",GRAD_METHOD);
+			fprintf(fp," GRAD_METHOD=%d: SPG\n", GRAD_METHOD);
+    		fprintf(fp," MEMORY=%d\n", MEMORY);
 			break;
 		default:
 			err(" Sorry, incorrect value for GRAD_METHOD ! \n");
