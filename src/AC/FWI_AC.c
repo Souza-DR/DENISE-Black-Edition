@@ -749,8 +749,8 @@ if(iter==1){min_iter_help=MIN_ITER;}
 {
   float f_ref = 0.0f;
   if (GRAD_METHOD==3 && iter>1){
-    extern int MEMORY;
-    int m = (MEMORY>0)?MEMORY:5;
+    extern int NLBFGS;
+    int m = (NLBFGS>0)?NLBFGS:5;
     int j0 = (iter-1)-m+1; if (j0<1) j0 = 1;
     double fmax = L2_hist[j0];
     for (j=j0+1; j<=iter-1; j++) if (L2_hist[j]>fmax) fmax=L2_hist[j];

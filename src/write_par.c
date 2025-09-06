@@ -43,7 +43,7 @@ void write_par(FILE *fp){
 	extern float EPS_SCALE, SCALEFAC;
 	extern char  TRKILL_FILE[STRING_SIZE];
 
-	extern int NORMALIZE, NLBFGS, MEMORY, N_STREAMER;
+	extern int NORMALIZE, NLBFGS, N_STREAMER;
         extern float REC_INCR_X, REC_INCR_Y;
 	
 	extern char MISFIT_LOG_FILE[STRING_SIZE];
@@ -391,9 +391,9 @@ void write_par(FILE *fp){
 			fprintf(fp," GRAD_METHOD=%d: LBFGS\n",GRAD_METHOD);
                         fprintf(fp," NLBFGS=%d \n",NLBFGS);
 			break;
-		case 3:
+        case 3:
 			fprintf(fp," GRAD_METHOD=%d: SPG\n", GRAD_METHOD);
-    		fprintf(fp," MEMORY=%d\n", MEMORY);
+            fprintf(fp," SPG memory (nonmonotone window m) = %d\n", NLBFGS);
 			break;
 		default:
 			err(" Sorry, incorrect value for GRAD_METHOD ! \n");

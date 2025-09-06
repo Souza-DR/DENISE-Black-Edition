@@ -178,7 +178,6 @@ lower_limit_for_qs_(QSLOWERLIM) = 10.0
 gradient_method_(PCG=1/LBFGS=2/SPG=3)_(GRAD_METHOD) = 3
 PCG_BETA_(Fletcher_Reeves=1/Polak_Ribiere=2/Hestenes_Stiefel=3/Dai_Yuan=4) = 2
 save_(NLBFGS)_updates_during_LBFGS_optimization = 20
-SPG_memory_(size_of_nonmonotone_window)_(MEMORY) = 10
 #
 #
 #----- Definition of smoothing the models vp and vs ----- #
